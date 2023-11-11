@@ -1,0 +1,36 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: CloneX
+    network: mainnet
+    source:
+      address: "0x49cF6f5d44E70224e2E23fDcdd2C053F30aDA28B"
+      abi: CloneX
+      startBlock: 13790684
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - CloneXRevealed
+        - OwnershipTransferred
+        - Transfer
+      abis:
+        - name: CloneX
+          file: ./abis/CloneX.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: CloneXRevealed(uint256,string)
+          handler: handleCloneXRevealed
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/clone-x.ts
