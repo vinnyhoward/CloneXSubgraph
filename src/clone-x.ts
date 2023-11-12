@@ -1,60 +1,62 @@
+import { BigInt } from "@graphprotocol/graph-ts";
 import {
   Approval as ApprovalEvent,
   ApprovalForAll as ApprovalForAllEvent,
   CloneXRevealed as CloneXRevealedEvent,
   OwnershipTransferred as OwnershipTransferredEvent,
-  Transfer as TransferEvent
-} from "../generated/CloneX/CloneX"
+  Transfer as TransferEvent,
+} from "../generated/CloneX/CloneX";
 import {
   Approval,
   ApprovalForAll,
   CloneXRevealed,
   OwnershipTransferred,
-  Transfer
-} from "../generated/schema"
+  Transfer,
+  Account,
+} from "../generated/schema";
 
 export function handleApproval(event: ApprovalEvent): void {
   let entity = new Approval(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.owner = event.params.owner
-  entity.approved = event.params.approved
-  entity.tokenId = event.params.tokenId
+  );
+  entity.owner = event.params.owner;
+  entity.approved = event.params.approved;
+  entity.tokenId = event.params.tokenId;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.save();
 }
 
 export function handleApprovalForAll(event: ApprovalForAllEvent): void {
   let entity = new ApprovalForAll(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.owner = event.params.owner
-  entity.operator = event.params.operator
-  entity.approved = event.params.approved
+  );
+  entity.owner = event.params.owner;
+  entity.operator = event.params.operator;
+  entity.approved = event.params.approved;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.save();
 }
 
 export function handleCloneXRevealed(event: CloneXRevealedEvent): void {
   let entity = new CloneXRevealed(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.tokenId = event.params.tokenId
-  entity.fileId = event.params.fileId
+  );
+  entity.tokenId = event.params.tokenId;
+  entity.fileId = event.params.fileId;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.save();
 }
 
 export function handleOwnershipTransferred(
@@ -62,28 +64,41 @@ export function handleOwnershipTransferred(
 ): void {
   let entity = new OwnershipTransferred(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.previousOwner = event.params.previousOwner
-  entity.newOwner = event.params.newOwner
+  );
+  entity.previousOwner = event.params.previousOwner;
+  entity.newOwner = event.params.newOwner;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.save();
 }
 
 export function handleTransfer(event: TransferEvent): void {
   let entity = new Transfer(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.from = event.params.from
-  entity.to = event.params.to
-  entity.tokenId = event.params.tokenId
+  );
+  entity.from = event.params.from;
+  entity.to = event.params.to;
+  entity.tokenId = event.params.tokenId;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.gasPrice = event.transaction.gasPrice;
+
+  entity.save();
+
+  let accountId = event.params.from; // This is already a Bytes object
+  let account = Account.load(accountId);
+
+  if (account == null) {
+    account = new Account(accountId);
+    account.gasSpent = BigInt.fromI32(0);
+  }
+
+  account.gasSpent = account.gasSpent.plus(event.transaction.gasPrice);
+  account.save();
 }
