@@ -49,5 +49,4 @@ type Transfer @entity(immutable: true) {
 
 type Account @entity {
   id: Bytes! # address
-  gasSpent: BigInt! # Total gas spent by this account
-}
+  gasSpent: BigInt!
