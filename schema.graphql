@@ -50,3 +50,16 @@ type Transfer @entity(immutable: true) {
 type Account @entity {
   id: Bytes! # address
   gasSpent: BigInt!
+}
+
+type MetaData @entity {
+  id: ID!
+  tokenId: BigInt!
+  traits: [Trait!]!
+}
+
+type Trait @entity {
+  id: ID!
+  traitType: String!
+  value: String!
+}

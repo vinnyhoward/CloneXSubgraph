@@ -1,6 +1,6 @@
 # CloneX
 
-![CloneX](/assets/clonex.jpg)
+![CloneX](/assets/images/clonex.jpg)
 
 The Clone X collection, a collaboration between RTFKT and Takashi Murakami, features 20,000 next-gen Avatars. This ambitious project marks the beginning of a comprehensive ecosystem designed for our community. Focused on quality and sophistication, these high-end avatars are meticulously crafted, ready to make their mark in the metaverse.
 
