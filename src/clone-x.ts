@@ -76,29 +76,71 @@ export function handleOwnershipTransferred(
 }
 
 export function handleTransfer(event: TransferEvent): void {
-  let entity = new Transfer(
+
+  // transfer
+  const transferEntity = new Transfer(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   );
-  entity.from = event.params.from;
-  entity.to = event.params.to;
-  entity.tokenId = event.params.tokenId;
+  transferEntity.from = event.params.from;
+  transferEntity.to = event.params.to;
+  transferEntity.tokenId = event.params.tokenId;
+  transferEntity.blockNumber = event.block.number;
+  transferEntity.blockTimestamp = event.block.timestamp;
+  transferEntity.transactionHash = event.transaction.hash;
+  transferEntity.gasPrice = event.transaction.gasPrice;
+  transferEntity.save();
+  
+  let fromAccountId = event.params.from;
+  let toAccountId = event.params.to;
 
-  entity.blockNumber = event.block.number;
-  entity.blockTimestamp = event.block.timestamp;
-  entity.transactionHash = event.transaction.hash;
-
-  entity.gasPrice = event.transaction.gasPrice;
-
-  entity.save();
-
-  let accountId = event.params.from; // This is already a Bytes object
-  let account = Account.load(accountId);
-
-  if (account == null) {
-    account = new Account(accountId);
-    account.gasSpent = BigInt.fromI32(0);
+  let fromAccount = Account.load(fromAccountId);
+  if (fromAccount == null) {
+    fromAccount = new Account(fromAccountId);
+    fromAccount.nftCount = 0;
+    fromAccount.totalGasSpent = BigInt.fromI32(0);
+    fromAccount.transactions = new Array<string>();
+  }
+  if (fromAccountId.toHex() != "0x0000000000000000000000000000000000000000") {
+    fromAccount.nftCount -= 1;
   }
 
-  account.gasSpent = account.gasSpent.plus(event.transaction.gasPrice);
-  account.save();
+  if (!fromAccount.totalGasSpent) {
+    fromAccount.totalGasSpent = BigInt.fromI32(0);
+  }
+
+  fromAccount.totalGasSpent = fromAccount.totalGasSpent.plus(
+    event.transaction.gasPrice
+  );
+
+  let fromTransactions = fromAccount.transactions;
+  if (!fromTransactions) {
+    fromTransactions = new Array<string>();
+  }
+  fromTransactions.push(event.transaction.hash.toHex());
+  fromAccount.transactions = fromTransactions;
+  fromAccount.save();
+
+  let toAccount = Account.load(toAccountId);
+  if (toAccount == null) {
+    toAccount = new Account(toAccountId);
+    toAccount.nftCount = 0;
+    toAccount.totalGasSpent = BigInt.fromI32(0);
+    toAccount.transactions = new Array<string>();
+  }
+  toAccount.nftCount += 1;
+
+  if (!toAccount.totalGasSpent) {
+    toAccount.totalGasSpent = BigInt.fromI32(0);
+  }
+  toAccount.totalGasSpent = toAccount.totalGasSpent.plus(
+    event.transaction.gasPrice
+  );
+
+  let toTransactions = toAccount.transactions;
+  if (!toTransactions) {
+    toTransactions = new Array<string>();
+  }
+  toTransactions.push(event.transaction.hash.toHex());
+  toAccount.transactions = toTransactions;
+  toAccount.save();
 }
