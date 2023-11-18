@@ -58,3 +58,17 @@ query GetAccountData($accountId: String!) {
   }
 }
 ```
+
+## Query account data by wallet address
+
+```graphql
+query GetAccountData($accountId: String!) {
+  account(id: $accountId) {
+    id
+    totalGasSpent
+    transactions
+    nftCount
+    ownedTokenIds
+  }
+}
+```

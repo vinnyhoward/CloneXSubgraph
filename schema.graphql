@@ -49,8 +49,8 @@ type Transfer @entity(immutable: true) {
 
 type Account @entity {
   id: Bytes! # address
-  gasSpent: BigInt!
-  nftCount: Int!
+  nftCount: BigInt!
+  ownedTokenIds: [BigInt!]! # List of owned NFT token IDs
   totalGasSpent: BigInt!
-  transactions: [String!] # List of transaction hashes
+  transactions: [Bytes!] # List of transaction hashes
 }

@@ -9,11 +9,11 @@ A list of complete example queries you can make can be found here: [Queries.md](
 
 List of queries that are done or currently under the works
 
-❌ Query token metadata (Having issues with assemblyscript parsing my data)
-- Query Owner Data
+❌ Query token metadata (Having issues with assemblyscript parsing my trait data. May use a backend just to store and fetch traits by token id)
+- Query sales for the last 30 days
 ✅ Query transactions of the last 30 days 
 ✅ Query transactions within a specific time frame
-- Query sales for the last 30 days
+✅ Query account data by wallet address
 
 ## Links
 - Project: https://rtfkt.com

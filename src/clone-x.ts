@@ -1,4 +1,4 @@
-import { BigInt } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes } from "@graphprotocol/graph-ts";
 import {
   Approval as ApprovalEvent,
   ApprovalForAll as ApprovalForAllEvent,
@@ -76,7 +76,6 @@ export function handleOwnershipTransferred(
 }
 
 export function handleTransfer(event: TransferEvent): void {
-
   // transfer
   const transferEntity = new Transfer(
     event.transaction.hash.concatI32(event.logIndex.toI32())
@@ -89,45 +88,59 @@ export function handleTransfer(event: TransferEvent): void {
   transferEntity.transactionHash = event.transaction.hash;
   transferEntity.gasPrice = event.transaction.gasPrice;
   transferEntity.save();
-  
+
   let fromAccountId = event.params.from;
   let toAccountId = event.params.to;
+  let tokenId = event.params.tokenId;
 
   let fromAccount = Account.load(fromAccountId);
   if (fromAccount == null) {
     fromAccount = new Account(fromAccountId);
-    fromAccount.nftCount = 0;
+    fromAccount.nftCount = BigInt.fromI32(0);
     fromAccount.totalGasSpent = BigInt.fromI32(0);
-    fromAccount.transactions = new Array<string>();
+    fromAccount.transactions = new Array<Bytes>();
+    fromAccount.ownedTokenIds = [];
   }
-  if (fromAccountId.toHex() != "0x0000000000000000000000000000000000000000") {
-    fromAccount.nftCount -= 1;
+  
+  // Check if it's a regular transfer and not a minting event
+  if (fromAccountId.toHexString() != "0x0000000000000000000000000000000000000000") {
+    fromAccount.nftCount = fromAccount.nftCount.minus(BigInt.fromI32(1));
+  
+    // Remove the token ID from the ownedTokenIds array
+    let tokenIndex = fromAccount.ownedTokenIds.indexOf(tokenId);
+    if (tokenIndex > -1) {
+      fromAccount.ownedTokenIds.splice(tokenIndex, 1);
+    }
   }
-
+  
   if (!fromAccount.totalGasSpent) {
     fromAccount.totalGasSpent = BigInt.fromI32(0);
   }
-
-  fromAccount.totalGasSpent = fromAccount.totalGasSpent.plus(
-    event.transaction.gasPrice
-  );
-
+  
+  fromAccount.totalGasSpent = fromAccount.totalGasSpent.plus(event.transaction.gasPrice);
+  
   let fromTransactions = fromAccount.transactions;
   if (!fromTransactions) {
-    fromTransactions = new Array<string>();
+    fromTransactions = new Array<Bytes>();
   }
-  fromTransactions.push(event.transaction.hash.toHex());
+  
+  fromTransactions.push(event.transaction.hash);
   fromAccount.transactions = fromTransactions;
   fromAccount.save();
 
   let toAccount = Account.load(toAccountId);
   if (toAccount == null) {
     toAccount = new Account(toAccountId);
-    toAccount.nftCount = 0;
+    toAccount.nftCount = BigInt.fromI32(1);
     toAccount.totalGasSpent = BigInt.fromI32(0);
-    toAccount.transactions = new Array<string>();
+    toAccount.transactions = new Array<Bytes>();
+    toAccount.ownedTokenIds = fromAccountId.toHexString() == "0x0000000000000000000000000000000000000000" ? [tokenId] : []; // Only add tokenId for minting
+  } else {
+    if (!toAccount.ownedTokenIds.includes(tokenId)) {
+      toAccount.ownedTokenIds.push(tokenId);
+    }
+    toAccount.nftCount = toAccount.nftCount.plus(BigInt.fromI32(1)); // Increment nftCount only once
   }
-  toAccount.nftCount += 1;
 
   if (!toAccount.totalGasSpent) {
     toAccount.totalGasSpent = BigInt.fromI32(0);
@@ -137,10 +150,12 @@ export function handleTransfer(event: TransferEvent): void {
   );
 
   let toTransactions = toAccount.transactions;
+
   if (!toTransactions) {
-    toTransactions = new Array<string>();
+    toTransactions = new Array<Bytes>();
   }
-  toTransactions.push(event.transaction.hash.toHex());
+
+  toTransactions.push(event.transaction.hash);
   toAccount.transactions = toTransactions;
   toAccount.save();
 }
