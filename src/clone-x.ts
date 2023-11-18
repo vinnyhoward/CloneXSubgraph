@@ -13,66 +13,68 @@ import {
   OwnershipTransferred,
   Transfer,
   Account,
+  Token,
 } from "../generated/schema";
 
 export function handleApproval(event: ApprovalEvent): void {
-  let entity = new Approval(
+  let approvalEntity = new Approval(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   );
-  entity.owner = event.params.owner;
-  entity.approved = event.params.approved;
-  entity.tokenId = event.params.tokenId;
+  approvalEntity.owner = event.params.owner;
+  approvalEntity.approved = event.params.approved;
+  approvalEntity.tokenId = event.params.tokenId;
 
-  entity.blockNumber = event.block.number;
-  entity.blockTimestamp = event.block.timestamp;
-  entity.transactionHash = event.transaction.hash;
+  approvalEntity.blockNumber = event.block.number;
+  approvalEntity.blockTimestamp = event.block.timestamp;
+  approvalEntity.transactionHash = event.transaction.hash;
 
-  entity.save();
+  approvalEntity.save();
 }
 
 export function handleApprovalForAll(event: ApprovalForAllEvent): void {
-  let entity = new ApprovalForAll(
+  let approveAllEntity = new ApprovalForAll(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   );
-  entity.owner = event.params.owner;
-  entity.operator = event.params.operator;
-  entity.approved = event.params.approved;
+  approveAllEntity.owner = event.params.owner;
+  approveAllEntity.operator = event.params.operator;
+  approveAllEntity.approved = event.params.approved;
 
-  entity.blockNumber = event.block.number;
-  entity.blockTimestamp = event.block.timestamp;
-  entity.transactionHash = event.transaction.hash;
+  approveAllEntity.blockNumber = event.block.number;
+  approveAllEntity.blockTimestamp = event.block.timestamp;
+  approveAllEntity.transactionHash = event.transaction.hash;
 
-  entity.save();
+  approveAllEntity.save();
 }
 
 export function handleCloneXRevealed(event: CloneXRevealedEvent): void {
-  let entity = new CloneXRevealed(
+  let revealEntity = new CloneXRevealed(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   );
-  entity.tokenId = event.params.tokenId;
-  entity.fileId = event.params.fileId;
+  const tokenId = event.params.tokenId;
+  revealEntity.tokenId = tokenId;
+  revealEntity.fileId = event.params.fileId;
 
-  entity.blockNumber = event.block.number;
-  entity.blockTimestamp = event.block.timestamp;
-  entity.transactionHash = event.transaction.hash;
+  revealEntity.blockNumber = event.block.number;
+  revealEntity.blockTimestamp = event.block.timestamp;
+  revealEntity.transactionHash = event.transaction.hash;
 
-  entity.save();
+  revealEntity.save();
 }
 
 export function handleOwnershipTransferred(
   event: OwnershipTransferredEvent
 ): void {
-  let entity = new OwnershipTransferred(
+  let ownershipEntity = new OwnershipTransferred(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   );
-  entity.previousOwner = event.params.previousOwner;
-  entity.newOwner = event.params.newOwner;
+  ownershipEntity.previousOwner = event.params.previousOwner;
+  ownershipEntity.newOwner = event.params.newOwner;
 
-  entity.blockNumber = event.block.number;
-  entity.blockTimestamp = event.block.timestamp;
-  entity.transactionHash = event.transaction.hash;
+  ownershipEntity.blockNumber = event.block.number;
+  ownershipEntity.blockTimestamp = event.block.timestamp;
+  ownershipEntity.transactionHash = event.transaction.hash;
 
-  entity.save();
+  ownershipEntity.save();
 }
 
 export function handleTransfer(event: TransferEvent): void {
@@ -87,10 +89,9 @@ export function handleTransfer(event: TransferEvent): void {
   transferEntity.blockTimestamp = event.block.timestamp;
   transferEntity.transactionHash = event.transaction.hash;
   transferEntity.gasPrice = event.transaction.gasPrice;
-  transferEntity.save();
 
-  let fromAccountId = event.params.from;
-  let toAccountId = event.params.to;
+  let fromAccountId = event.params.from.toHexString();
+  let toAccountId = event.params.to.toHexString();
   let tokenId = event.params.tokenId;
 
   let fromAccount = Account.load(fromAccountId);
@@ -101,32 +102,31 @@ export function handleTransfer(event: TransferEvent): void {
     fromAccount.transactions = new Array<Bytes>();
     fromAccount.ownedTokenIds = [];
   }
-  
-  // Check if it's a regular transfer and not a minting event
-  if (fromAccountId.toHexString() != "0x0000000000000000000000000000000000000000") {
+
+  if (fromAccountId != "0x0000000000000000000000000000000000000000") {
     fromAccount.nftCount = fromAccount.nftCount.minus(BigInt.fromI32(1));
-  
-    // Remove the token ID from the ownedTokenIds array
+
     let tokenIndex = fromAccount.ownedTokenIds.indexOf(tokenId);
     if (tokenIndex > -1) {
       fromAccount.ownedTokenIds.splice(tokenIndex, 1);
     }
   }
-  
+
   if (!fromAccount.totalGasSpent) {
     fromAccount.totalGasSpent = BigInt.fromI32(0);
   }
-  
-  fromAccount.totalGasSpent = fromAccount.totalGasSpent.plus(event.transaction.gasPrice);
-  
+
+  fromAccount.totalGasSpent = fromAccount.totalGasSpent.plus(
+    event.transaction.gasPrice
+  );
+
   let fromTransactions = fromAccount.transactions;
   if (!fromTransactions) {
     fromTransactions = new Array<Bytes>();
   }
-  
+
   fromTransactions.push(event.transaction.hash);
   fromAccount.transactions = fromTransactions;
-  fromAccount.save();
 
   let toAccount = Account.load(toAccountId);
   if (toAccount == null) {
@@ -134,12 +134,15 @@ export function handleTransfer(event: TransferEvent): void {
     toAccount.nftCount = BigInt.fromI32(1);
     toAccount.totalGasSpent = BigInt.fromI32(0);
     toAccount.transactions = new Array<Bytes>();
-    toAccount.ownedTokenIds = fromAccountId.toHexString() == "0x0000000000000000000000000000000000000000" ? [tokenId] : []; // Only add tokenId for minting
+    toAccount.ownedTokenIds =
+      fromAccountId == "0x0000000000000000000000000000000000000000"
+        ? [tokenId]
+        : [];
   } else {
     if (!toAccount.ownedTokenIds.includes(tokenId)) {
       toAccount.ownedTokenIds.push(tokenId);
     }
-    toAccount.nftCount = toAccount.nftCount.plus(BigInt.fromI32(1)); // Increment nftCount only once
+    toAccount.nftCount = toAccount.nftCount.plus(BigInt.fromI32(1));
   }
 
   if (!toAccount.totalGasSpent) {
@@ -149,6 +152,10 @@ export function handleTransfer(event: TransferEvent): void {
     event.transaction.gasPrice
   );
 
+  const tokenEntity = new Token(tokenId.toString());
+  tokenEntity.tokenId = tokenId;
+  tokenEntity.owner = toAccount.id;
+
   let toTransactions = toAccount.transactions;
 
   if (!toTransactions) {
@@ -157,5 +164,9 @@ export function handleTransfer(event: TransferEvent): void {
 
   toTransactions.push(event.transaction.hash);
   toAccount.transactions = toTransactions;
+
+  transferEntity.save();
+  fromAccount.save();
+  tokenEntity.save();
   toAccount.save();
 }

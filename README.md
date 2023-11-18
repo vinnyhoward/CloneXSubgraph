@@ -14,6 +14,7 @@ List of queries that are done or currently under the works
 ✅ Query transactions of the last 30 days 
 ✅ Query transactions within a specific time frame
 ✅ Query account data by wallet address
+- Query current owner and transactions by token id
 
 ## Links
 - Project: https://rtfkt.com
