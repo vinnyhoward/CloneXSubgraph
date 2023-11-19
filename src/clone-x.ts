@@ -1,4 +1,3 @@
-import { BigInt, Bytes } from "@graphprotocol/graph-ts";
 import {
   Approval as ApprovalEvent,
   ApprovalForAll as ApprovalForAllEvent,
@@ -11,10 +10,11 @@ import {
   ApprovalForAll,
   CloneXRevealed,
   OwnershipTransferred,
-  Transfer,
-  Account,
-  Token,
 } from "../generated/schema";
+import { BIGINT_ONE } from "./constants";
+import { getOrCreateAccount } from "./helpers/accountHelper";
+import { getOrCreateTransfer } from "./helpers/transferHelper";
+import { getOrCreateToken } from "./helpers/tokenHelper";
 
 export function handleApproval(event: ApprovalEvent): void {
   let approvalEntity = new Approval(
@@ -78,95 +78,49 @@ export function handleOwnershipTransferred(
 }
 
 export function handleTransfer(event: TransferEvent): void {
-  // transfer
-  const transferEntity = new Transfer(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  );
-  transferEntity.from = event.params.from;
-  transferEntity.to = event.params.to;
-  transferEntity.tokenId = event.params.tokenId;
-  transferEntity.blockNumber = event.block.number;
-  transferEntity.blockTimestamp = event.block.timestamp;
-  transferEntity.transactionHash = event.transaction.hash;
-  transferEntity.gasPrice = event.transaction.gasPrice;
+  // create transfer
+  getOrCreateTransfer(event);
 
-  let fromAccountId = event.params.from.toHexString();
-  let toAccountId = event.params.to.toHexString();
-  let tokenId = event.params.tokenId;
+  // create accounts
+  const fromAccount = getOrCreateAccount(event.params.from);
+  const toAccount = getOrCreateAccount(event.params.to);
+  const toTransactions = toAccount.transactions;
+  const fromTransactions = fromAccount.transactions;
 
-  let fromAccount = Account.load(fromAccountId);
-  if (fromAccount == null) {
-    fromAccount = new Account(fromAccountId);
-    fromAccount.nftCount = BigInt.fromI32(0);
-    fromAccount.totalGasSpent = BigInt.fromI32(0);
-    fromAccount.transactions = new Array<Bytes>();
-    fromAccount.ownedTokenIds = [];
+  // create token
+  let token = getOrCreateToken(event.params.tokenId, toAccount.id);
+  token.save();
+  let tokenId = token.tokenId;
+
+  // Update owned tokens for fromAccount
+  let fromOwnedTokenIds = fromAccount.ownedTokenIds;
+  const fromIndex = fromOwnedTokenIds.indexOf(tokenId);
+  if (fromIndex > -1) {
+    fromOwnedTokenIds.splice(fromIndex, 1);
   }
+  fromAccount.ownedTokenIds = fromOwnedTokenIds;
 
-  if (fromAccountId != "0x0000000000000000000000000000000000000000") {
-    fromAccount.nftCount = fromAccount.nftCount.minus(BigInt.fromI32(1));
-
-    let tokenIndex = fromAccount.ownedTokenIds.indexOf(tokenId);
-    if (tokenIndex > -1) {
-      fromAccount.ownedTokenIds.splice(tokenIndex, 1);
-    }
+  // Update owned tokens for toAccount
+  let toOwnedTokenIds = toAccount.ownedTokenIds;
+  if (toOwnedTokenIds.indexOf(tokenId) === -1) {
+    toOwnedTokenIds.push(tokenId);
   }
+  toAccount.ownedTokenIds = toOwnedTokenIds;
 
-  if (!fromAccount.totalGasSpent) {
-    fromAccount.totalGasSpent = BigInt.fromI32(0);
-  }
+  // update accounts
+  fromAccount.nftCount = fromAccount.nftCount.minus(BIGINT_ONE);
+  toAccount.nftCount = toAccount.nftCount.plus(BIGINT_ONE);
 
-  fromAccount.totalGasSpent = fromAccount.totalGasSpent.plus(
-    event.transaction.gasPrice
-  );
+  // update gas in accounts
+  fromAccount.totalGasSpent = fromAccount.totalGasSpent.plus(event.transaction.gasPrice);
 
-  let fromTransactions = fromAccount.transactions;
-  if (!fromTransactions) {
-    fromTransactions = new Array<Bytes>();
-  }
-
+  // update transactions in accounts (taking assemblyscript's immutable arrays into account)
   fromTransactions.push(event.transaction.hash);
   fromAccount.transactions = fromTransactions;
-
-  let toAccount = Account.load(toAccountId);
-  if (toAccount == null) {
-    toAccount = new Account(toAccountId);
-    toAccount.nftCount = BigInt.fromI32(1);
-    toAccount.totalGasSpent = BigInt.fromI32(0);
-    toAccount.transactions = new Array<Bytes>();
-    toAccount.ownedTokenIds =
-      fromAccountId == "0x0000000000000000000000000000000000000000"
-        ? [tokenId]
-        : [];
-  } else {
-    if (!toAccount.ownedTokenIds.includes(tokenId)) {
-      toAccount.ownedTokenIds.push(tokenId);
-    }
-    toAccount.nftCount = toAccount.nftCount.plus(BigInt.fromI32(1));
-  }
-
-  if (!toAccount.totalGasSpent) {
-    toAccount.totalGasSpent = BigInt.fromI32(0);
-  }
-  toAccount.totalGasSpent = toAccount.totalGasSpent.plus(
-    event.transaction.gasPrice
-  );
-
-  const tokenEntity = new Token(tokenId.toString());
-  tokenEntity.tokenId = tokenId;
-  tokenEntity.owner = toAccount.id;
-
-  let toTransactions = toAccount.transactions;
-
-  if (!toTransactions) {
-    toTransactions = new Array<Bytes>();
-  }
 
   toTransactions.push(event.transaction.hash);
   toAccount.transactions = toTransactions;
 
-  transferEntity.save();
   fromAccount.save();
-  tokenEntity.save();
   toAccount.save();
 }
