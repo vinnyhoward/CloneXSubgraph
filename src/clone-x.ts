@@ -15,6 +15,7 @@ import { BIGINT_ONE } from "./constants";
 import { getOrCreateAccount } from "./helpers/accountHelper";
 import { getOrCreateTransfer } from "./helpers/transferHelper";
 import { getOrCreateToken } from "./helpers/tokenHelper";
+import { getOrCreateTransferHistory } from "./helpers/transferHistoryHelper";
 
 export function handleApproval(event: ApprovalEvent): void {
   let approvalEntity = new Approval(
@@ -112,7 +113,9 @@ export function handleTransfer(event: TransferEvent): void {
   toAccount.nftCount = toAccount.nftCount.plus(BIGINT_ONE);
 
   // update gas in accounts
-  fromAccount.totalGasSpent = fromAccount.totalGasSpent.plus(event.transaction.gasPrice);
+  fromAccount.totalGasSpent = fromAccount.totalGasSpent.plus(
+    event.transaction.gasPrice
+  );
 
   // update transactions in accounts (taking assemblyscript's immutable arrays into account)
   fromTransactions.push(event.transaction.hash);
@@ -121,6 +124,26 @@ export function handleTransfer(event: TransferEvent): void {
   toTransactions.push(event.transaction.hash);
   toAccount.transactions = toTransactions;
 
+  // Create or update TransferHistory
+  let transferHistoryEntity = getOrCreateTransferHistory(
+    event,
+    token.id,
+    fromAccount.id,
+    toAccount.id
+  );
+
+  // Update token transfer history
+  let tokenHistory = token.transferHistory;
+  let updatedTokenHistory = new Array<string>();
+
+  for (let i = 0; i < tokenHistory.length; i++) {
+    updatedTokenHistory.push(tokenHistory[i]);
+  }
+
+  updatedTokenHistory.push(transferHistoryEntity.id);
+  token.transferHistory = updatedTokenHistory;
+
+  token.save();
   fromAccount.save();
   toAccount.save();
 }

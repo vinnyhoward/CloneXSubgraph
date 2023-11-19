@@ -7,6 +7,7 @@ export const getOrCreateToken = (tokenId: BigInt, owner: Bytes): Token => {
         token = new Token(tokenId.toString());
         token.tokenId = tokenId;
         token.owner = owner;
+        token.transferHistory = new Array<string>();
         token.save();
     }
 

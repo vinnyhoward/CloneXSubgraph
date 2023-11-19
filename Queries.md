@@ -1,11 +1,15 @@
 ## Querying Transactions Within a Specific Time Frame
 
 ```graphql
-query TransfersInTimeRange($startTime: String, $endTime: String, $tokenId: String) {
+query TransfersInTimeRange(
+  $startTime: String
+  $endTime: String
+  $tokenId: String
+) {
   transfers(
     where: {
-      blockTimestamp_gte: $startTime, 
-      blockTimestamp_lte: $endTime, 
+      blockTimestamp_gte: $startTime
+      blockTimestamp_lte: $endTime
       tokenId: $tokenId
     }
     orderBy: blockTimestamp
@@ -19,18 +23,13 @@ query TransfersInTimeRange($startTime: String, $endTime: String, $tokenId: Strin
     transactionHash
   }
 }
-
 ```
 
-## Query transactions of the last 30 days 
+## Query transactions of the last 30 days
 
 ```graphql
 query GetTransfersFromLast30Days($timestampGte: String) {
-  transfers(
-    where: {
-      blockTimestamp_gte: $timestampGte
-    }
-  ) {
+  transfers(where: { blockTimestamp_gte: $timestampGte }) {
     to
     from
     tokenId
@@ -42,8 +41,9 @@ query GetTransfersFromLast30Days($timestampGte: String) {
 ```
 
 Fetching `$timestamp_gt` like so:
+
 ```js
-  const date = Math.round(Date.now() / 1000) - 30 * 24 * 60 * 60;
+const date = Math.round(Date.now() / 1000) - 30 * 24 * 60 * 60;
 ```
 
 ## Query Owner Data
@@ -69,6 +69,28 @@ query GetAccountData($accountId: String!) {
     transactions
     nftCount
     ownedTokenIds
+  }
+}
+```
+
+## Query current owner and transactions by token id
+
+```graphql
+query GetTokenData($tokenId: string) {
+  token(id: $tokenId) {
+    id
+    tokenId
+    transferHistory {
+      receiver {
+        id
+      }
+      sender {
+        id
+      }
+    }
+    owner {
+      id
+    }
   }
 }
 ```
