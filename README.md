@@ -18,10 +18,10 @@ List of queries that are done or currently under the works
 
 ✅ Query current owner and transactions by token id
 
-### Failed to create these queries (will try again later)
-❌ Query token metadata (Having issues with assemblyscript parsing my trait data. I assume it is because it is too large. May use a backend just to store and fetch traits by token id)
+### Queries that are a work in progress
+- Query token metadata 
 
-❌ Query sales for the last 30 days (having issues finding the right contract to find sales. Seems like they are all proxy contracts and there is a lot of them so it is impossible to find them all)
+- Query sales for the last 30 days
 
 ## Links
 - Project: https://rtfkt.com
