@@ -1,74 +1,176 @@
+# Represents an approval record, immutable once created
 type Approval @entity(immutable: true) {
-  id: Bytes!
-  owner: Bytes! # address
-  approved: Bytes! # address
-  tokenId: BigInt! # uint256
+  # Unique identifier for the approval record
+  id: Bytes! 
+
+  # Ethereum address of the owner
+  owner: Bytes! 
+
+  # Ethereum address of the approved entity
+  approved: Bytes! 
+
+  # Token ID (uint256) associated with this approval
+  tokenId: BigInt! 
+
+  # Block number where this approval was recorded
   blockNumber: BigInt!
+
+  # Timestamp of the block
   blockTimestamp: BigInt!
+
+  # Hash of the transaction for this approval
   transactionHash: Bytes!
 }
 
+# Represents a global approval for an operator to manage all of an owner's assets
 type ApprovalForAll @entity(immutable: true) {
+  # Unique identifier for the global approval record
   id: Bytes!
-  owner: Bytes! # address
-  operator: Bytes! # address
-  approved: Boolean! # bool
+
+  # Ethereum address of the owner
+  owner: Bytes! 
+
+  # Ethereum address of the operator
+  operator: Bytes! 
+
+  # Boolean flag indicating approval status
+  approved: Boolean! 
+
+  # Block number where this approval for all was recorded
   blockNumber: BigInt!
+
+  # Timestamp of the block
   blockTimestamp: BigInt!
+
+  # Hash of the transaction for this approval for all
   transactionHash: Bytes!
 }
 
+# Represents the reveal event of a CloneX token
 type CloneXRevealed @entity(immutable: true) {
+  # Unique identifier for the reveal event
   id: Bytes!
-  tokenId: BigInt! # uint256
-  fileId: String! # string
+
+  # Token ID (uint256) of the revealed token
+  tokenId: BigInt! 
+
+  # Associated file ID (string) for the reveal
+  fileId: String! 
+
+  # Block number where this reveal was recorded
   blockNumber: BigInt!
+
+  # Timestamp of the block
   blockTimestamp: BigInt!
+
+  # Hash of the transaction for this reveal event
   transactionHash: Bytes!
 }
 
+# Represents an ownership transfer event, immutable once created
 type OwnershipTransferred @entity(immutable: true) {
+  # Unique identifier for the ownership transfer event
   id: Bytes!
-  previousOwner: Bytes! # address
-  newOwner: Bytes! # address
+
+  # Ethereum address of the previous owner
+  previousOwner: Bytes! 
+
+  # Ethereum address of the new owner
+  newOwner: Bytes! 
+
+  # Block number where this transfer was recorded
   blockNumber: BigInt!
+
+  # Timestamp of the block
   blockTimestamp: BigInt!
+
+  # Hash of the transaction for this ownership transfer
   transactionHash: Bytes!
 }
 
+# Represents a transfer of a token, immutable once created
 type Transfer @entity(immutable: true) {
+  # Unique identifier for the transfer event
   id: Bytes!
-  from: Bytes! # address
-  to: Bytes! # address
-  tokenId: BigInt! # uint256
+
+  # Ethereum address of the sender
+  from: Bytes! 
+
+  # Ethereum address of the receiver
+  to: Bytes! 
+
+  # Token ID (uint256) of the transferred token
+  tokenId: BigInt! 
+
+  # Block number where this transfer was recorded
   blockNumber: BigInt!
+
+  # Timestamp of the block
   blockTimestamp: BigInt!
+
+  # Hash of the transaction for this transfer
   transactionHash: Bytes!
+
+  # Gas price paid for this transaction
   gasPrice: BigInt!
 }
 
+# Represents an account in the system
 type Account @entity {
+  # Unique identifier (Ethereum address) for the account
   id: Bytes!
+
+  # Number of NFTs owned by the account
   nftCount: BigInt!
+
+  # List of token IDs owned by the account
   ownedTokenIds: [BigInt!]!
+
+  # Total gas spent by the account on transactions
   totalGasSpent: BigInt!
+
+  # List of transaction hashes involving this account
   transactions: [Bytes!]!
 }
 
+# Represents the transfer history of a token
 type TransferHistory @entity {
+  # Unique identifier for the transfer history record
   id: ID!
+
+  # Associated token with this transfer history
   token: Token! 
+
+  # Account that sent the token
   sender: Account! 
+
+  # Account that received the token
   receiver: Account! 
+
+  # Timestamp when the transfer occurred
   timestamp: BigInt! 
+
+  # Hash of the transaction for this transfer
   transactionHash: Bytes
+
+  # Block number where this transfer was recorded
   blockNumber: BigInt
+
+  # Gas price paid for this transaction
   gasPrice: BigInt
 }
 
+# Represents a token in the system
 type Token @entity {
+  # Unique identifier for the token
   id: ID!
+
+  # Token ID (uint256) of the token
   tokenId: BigInt!
+
+  # Current owner of the token
   owner: Account!
+
+  # List of transfer history records for the token
   transferHistory: [TransferHistory!]! 
 }

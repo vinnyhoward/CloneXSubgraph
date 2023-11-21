@@ -90,6 +90,7 @@ export function handleTransfer(event: TransferEvent): void {
 
   // create token
   let token = getOrCreateToken(event.params.tokenId, toAccount.id);
+  token.owner = toAccount.id;
   token.save();
   let tokenId = token.tokenId;
 

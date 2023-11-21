@@ -1,15 +1,16 @@
 import { BigInt, Bytes } from "@graphprotocol/graph-ts";
 import { Token } from "../../generated/schema";
 
-export const getOrCreateToken = (tokenId: BigInt, owner: Bytes): Token => {
+export const getOrCreateToken = (tokenId: BigInt, newOwner: Bytes): Token => {
     let token = Token.load(tokenId.toString());
     if (token == null) {
         token = new Token(tokenId.toString());
         token.tokenId = tokenId;
-        token.owner = owner;
         token.transferHistory = new Array<string>();
-        token.save();
     }
 
+    token.owner = newOwner;
+    token.save();
+    
     return token as Token;
 }
