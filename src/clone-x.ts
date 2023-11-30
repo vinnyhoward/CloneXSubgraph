@@ -16,6 +16,7 @@ import { getOrCreateAccount } from "./helpers/accountHelper";
 import { getOrCreateTransfer } from "./helpers/transferHelper";
 import { getOrCreateToken } from "./helpers/tokenHelper";
 import { getOrCreateTransferHistory } from "./helpers/transferHistoryHelper";
+import { getOrCreateMetadata } from "./helpers/metadataHelper";
 
 export function handleApproval(event: ApprovalEvent): void {
   let approvalEntity = new Approval(
@@ -91,8 +92,11 @@ export function handleTransfer(event: TransferEvent): void {
   // create token
   let token = getOrCreateToken(event.params.tokenId, toAccount.id);
   token.owner = toAccount.id;
-  token.save();
   let tokenId = token.tokenId;
+  
+  // create metadata
+  let metadata = getOrCreateMetadata(tokenId);
+  token.metadata = metadata.id;
 
   // Update owned tokens for fromAccount
   let fromOwnedTokenIds = fromAccount.ownedTokenIds;
@@ -144,6 +148,7 @@ export function handleTransfer(event: TransferEvent): void {
   updatedTokenHistory.push(transferHistoryEntity.id);
   token.transferHistory = updatedTokenHistory;
 
+  metadata.save();
   token.save();
   fromAccount.save();
   toAccount.save();

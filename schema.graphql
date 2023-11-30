@@ -173,4 +173,16 @@ type Token @entity {
 
   # List of transfer history records for the token
   transferHistory: [TransferHistory!]! 
+
+  # Metadata associated with the token
+  metadata: Metadata
+}
+
+# Represents metadata associated with a token
+type Metadata @entity {
+  # Unique identifier for the token metadata
+  id: ID!
+
+  # Image url for the token
+  image: String!
 }
