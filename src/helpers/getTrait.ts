@@ -1,10 +1,13 @@
-// import { metadata } from "../../assets/data/metadata";
-
-
-// export function getTrait(index: i32): any[] | null {
-//   if (index < metadata.length) {
-//     return metadata[index];
-//   } else {
-//     return null;
-//   }
-// }
+import {
+  cloneMetadata,
+  CloneMetadata,
+} from "../../assets/metadata/cloneMetadata";
+// Currently having issues with AssemblyScript parsing my metadata file.
+// So for now I will use a backend to fetch the NFT metadata
+export function getTrait(index: number): CloneMetadata | null {
+  if (index < cloneMetadata.length) {
+    return cloneMetadata[index];
+  } else {
+    return null;
+  }
+}

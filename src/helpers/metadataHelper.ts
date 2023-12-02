@@ -1,6 +1,7 @@
 import { BigInt } from "@graphprotocol/graph-ts";
 import { Metadata } from "../../generated/schema";
 import { TOKEN_URI } from "../constants";
+// import { getTrait } from "./getTrait";
 
 export function getOrCreateMetadata(cloneId: BigInt): Metadata {
   let id = cloneId.toString();

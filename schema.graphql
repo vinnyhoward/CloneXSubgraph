@@ -183,6 +183,10 @@ type Metadata @entity {
   # Unique identifier for the token metadata
   id: ID!
 
+  # Name of the token (The name and the token id aren't always 
+  # the same. Don't ask me why, ask the devs of the contract)
+  # name: String!
+
   # Image url for the token
   image: String!
 }
