@@ -11,12 +11,14 @@ async function fetchNFTMetadata(id) {
     const metadata = response.data;
     const imageUrl = metadata.image;
     const name = metadata.name;
+    const attributes = metadata.attributes;
     // The token id on chain is different from the actual name.
     // Don't ask me why, ask the devs of the project
     const realTokenId = imageUrl.match(/\/images\/(\d+)\.png/)[1];
     const data = {
       tokenId: Number(realTokenId),
       name: name,
+      attributes
     };
     console.log("fetched nft metadata:", data);
     return data;
