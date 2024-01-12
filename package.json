@@ -13,8 +13,10 @@
     "down": "docker compose down"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.7.0",
     "@graphprotocol/graph-cli": "0.62.0",
-    "@graphprotocol/graph-ts": "0.31.0"
+    "@graphprotocol/graph-ts": "0.31.0",
+    "sharp": "0.32.6"
   },
   "devDependencies": {
     "matchstick-as": "0.6.0"

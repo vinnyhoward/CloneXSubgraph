@@ -1,16 +1,16 @@
 # Represents an approval record, immutable once created
 type Approval @entity(immutable: true) {
   # Unique identifier for the approval record
-  id: Bytes! 
+  id: Bytes!
 
   # Ethereum address of the owner
-  owner: Bytes! 
+  owner: Bytes!
 
   # Ethereum address of the approved entity
-  approved: Bytes! 
+  approved: Bytes!
 
   # Token ID (uint256) associated with this approval
-  tokenId: BigInt! 
+  tokenId: BigInt!
 
   # Block number where this approval was recorded
   blockNumber: BigInt!
@@ -28,13 +28,13 @@ type ApprovalForAll @entity(immutable: true) {
   id: Bytes!
 
   # Ethereum address of the owner
-  owner: Bytes! 
+  owner: Bytes!
 
   # Ethereum address of the operator
-  operator: Bytes! 
+  operator: Bytes!
 
   # Boolean flag indicating approval status
-  approved: Boolean! 
+  approved: Boolean!
 
   # Block number where this approval for all was recorded
   blockNumber: BigInt!
@@ -52,10 +52,10 @@ type CloneXRevealed @entity(immutable: true) {
   id: Bytes!
 
   # Token ID (uint256) of the revealed token
-  tokenId: BigInt! 
+  tokenId: BigInt!
 
   # Associated file ID (string) for the reveal
-  fileId: String! 
+  fileId: String!
 
   # Block number where this reveal was recorded
   blockNumber: BigInt!
@@ -73,10 +73,10 @@ type OwnershipTransferred @entity(immutable: true) {
   id: Bytes!
 
   # Ethereum address of the previous owner
-  previousOwner: Bytes! 
+  previousOwner: Bytes!
 
   # Ethereum address of the new owner
-  newOwner: Bytes! 
+  newOwner: Bytes!
 
   # Block number where this transfer was recorded
   blockNumber: BigInt!
@@ -94,13 +94,13 @@ type Transfer @entity(immutable: true) {
   id: Bytes!
 
   # Ethereum address of the sender
-  from: Bytes! 
+  from: Bytes!
 
   # Ethereum address of the receiver
-  to: Bytes! 
+  to: Bytes!
 
   # Token ID (uint256) of the transferred token
-  tokenId: BigInt! 
+  tokenId: BigInt!
 
   # Block number where this transfer was recorded
   blockNumber: BigInt!
@@ -139,16 +139,16 @@ type TransferHistory @entity {
   id: ID!
 
   # Associated token with this transfer history
-  token: Token! 
+  token: Token!
 
   # Account that sent the token
-  sender: Account! 
+  sender: Account!
 
   # Account that received the token
-  receiver: Account! 
+  receiver: Account!
 
   # Timestamp when the transfer occurred
-  timestamp: BigInt! 
+  timestamp: BigInt!
 
   # Hash of the transaction for this transfer
   transactionHash: Bytes
@@ -172,7 +172,7 @@ type Token @entity {
   owner: Account!
 
   # List of transfer history records for the token
-  transferHistory: [TransferHistory!]! 
+  transferHistory: [TransferHistory!]!
 
   # Metadata associated with the token
   metadata: Metadata
@@ -183,10 +183,13 @@ type Metadata @entity {
   # Unique identifier for the token metadata
   id: ID!
 
-  # Name of the token (The name and the token id aren't always 
+  # Name of the token (The name and the token id aren't always
   # the same. Don't ask me why, ask the devs of the contract)
   # name: String!
 
   # Image url for the token
   image: String!
+
+  # Small blurred image url for the token to be used for base64 encoding
+  base64Image: String!
 }
