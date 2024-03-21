@@ -88,8 +88,8 @@ curl https://bun.sh/install | bash
 1. Clone the repository to get a local copy of the project:
 
 ```sh
-git clone https://github.com/vinnyhoward/loot-chest.git
-cd loot-chest
+git clone hhttps://github.com/vinnyhoward/clonex-subgraph.git
+cd clonex-subgraph
 ```
 
 2. Install dependencies using either npm (Node.js) or Bun. Choose the command based on your preference:
@@ -180,7 +180,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Vincent Howard - [@NiftyDeveloper](https://twitter.com/NiftyDeveloper) - vincenguyenhoward@gmail.com
 
-Project Link: [https://github.com/vinnyhoward/loot-chest](https://github.com/vinnyhoward/clonex-subgraph)
+Project Link: [https://github.com/vinnyhoward/clonex-subgraph](https://github.com/vinnyhoward/clonex-subgraph)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
